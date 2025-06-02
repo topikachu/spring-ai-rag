@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+  milvus:
+    image: milvusdb/milvus:v2.5.11
+    command: ["milvus", "run", "standalone"]
+    environment:
+      - ETCD_USE_EMBED=true
+      - ETCD_DATA_DIR=/var/lib/milvus/etcd
+      - ETCD_CONFIG_PATH=/milvus/configs/embedEtcd.yaml
+      - COMMON_STORAGETYPE=local
+    volumes:
+      - ./embedEtcd.yaml:/milvus/configs/embedEtcd.yaml
+      - ./milvus.yaml:/milvus/configs/milvus.yaml
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    security_opt:
+      - seccomp:unconfined
+    depends_on:
+      - jaeger
+
+  redis:
+    image: redis:7.4
+    ports:
+      - "6379:6379"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.46.0
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC receiver
+      - "4318:4318"    # OTLP HTTP receiver
+      - "5778:5778"    # Jaeger agent configs
+      - "9411:9411"    # Zipkin compatible endpoint
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
