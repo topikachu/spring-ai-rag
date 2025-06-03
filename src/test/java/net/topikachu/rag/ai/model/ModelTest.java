@@ -6,8 +6,10 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.milvus.autoconfigure.MilvusVectorStoreAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
@@ -17,7 +19,10 @@ import static org.springframework.context.annotation.FilterType.REGEX;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@EnableAutoConfiguration
+@EnableAutoConfiguration(exclude = {
+		MilvusVectorStoreAutoConfiguration.class,
+		RedisAutoConfiguration.class
+})
 @ContextConfiguration(classes = {ModelTest.TestConfig.class})
 @EnabledIfEnvironmentVariable(named =  "OPENAI_API_KEY", matches = ".+", disabledReason="No OpenAI API key found")
 public class ModelTest {
